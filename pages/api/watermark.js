@@ -24,7 +24,16 @@ const corsMiddleware = cors({
 const handler = nextConnect();
 
 handler.use(corsMiddleware);
-handler.options('*', corsMiddleware); // Enable preflight requests for all routes
+// Handle OPTIONS method for preflight requests
+handler.options('*', (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  // Send response
+  res.status(200).end();
+});
 
 handler.use(upload.single('video'));
 
