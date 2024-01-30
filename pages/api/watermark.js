@@ -15,13 +15,16 @@ const upload = multer({ dest: '/tmp' });
 // Initialize CORS middleware
 const corsMiddleware = cors({
   origin: '*',
-  methods: ['POST'], 
+  methods: ['POST', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  credentials: true,
 });
 
 
 const handler = nextConnect();
 
 handler.use(corsMiddleware);
+handler.options('*', corsMiddleware); // Enable preflight requests for all routes
 
 handler.use(upload.single('video'));
 
