@@ -34,6 +34,10 @@ handler.options('*', (req, res) => {
   // Send response
   res.status(200).end();
 });
+// Ensure that POST method is handled
+handler.post((req, res, next) => {
+  next();
+});
 
 handler.use(upload.single('video'));
 
