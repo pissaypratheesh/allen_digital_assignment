@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+const MAX_RECORDING_TIME = 300; // Maximum recording time in seconds (e.g., 300 seconds for 5 minutes)
 
 export default function RecorderPage() {
   const [isRecording, setRecording] = useState(false);
@@ -45,11 +46,16 @@ export default function RecorderPage() {
         const completeBlob = new Blob(chunks, { type: 'video/webm' });
         setVideoURL(URL.createObjectURL(completeBlob));
       };
-      mediaRecorderRef.current.start();
+      mediaRecorderRef.current.start(1000);
       setRecording(true);
       setPaused(false);
       setRecordingTime(0);
       timerRef.current = setInterval(() => {
+        if (recordingTime >= MAX_RECORDING_TIME) {
+          setError('Maximum recording time reached.');
+          handleStopRecording();
+          return;
+        }
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     }
@@ -177,6 +183,7 @@ export default function RecorderPage() {
       </div>
       <div className="status">
         <p className="text-lg">{isRecording ? (isPaused ? 'Paused' : 'Recording') : 'Not Recording'}</p>
+        {recordingTime >= MAX_RECORDING_TIME && <p className="text-red-500">Maximum recording time reached. Please download or start a new recording.</p>}  
         <p className="text-sm">Recording Time: {formatTime(recordingTime)}</p>
       </div>
     </div>
