@@ -116,8 +116,15 @@ export default function RecorderPage() {
         URL.revokeObjectURL(watermarkedURL);
       })
       .catch((error) => {
-        console.error('Download failed:', error);
-        setError('Failed to download the video with watermark.');
+         // If the watermarked video download fails, download the original video
+         const a = document.createElement('a');
+         a.href = videoURL;
+         a.download = 'recording.webm';
+         document.body.appendChild(a);
+         a.click();
+         document.body.removeChild(a);
+         URL.revokeObjectURL(videoURL);
+         setError('Failed to download the video with watermark. Downloading the original video instead.');
       });
   };
 
