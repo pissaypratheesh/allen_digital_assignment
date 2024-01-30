@@ -1,43 +1,46 @@
-import nextConnect from 'next-connect';
-import multer from 'multer';
-import fs from 'fs';
-import cors from 'cors';
-import path from 'path';
-import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
+import nextConnect from "next-connect";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegStatic from "ffmpeg-static";
 
 // Set FFmpeg path to the static binary provided by ffmpeg-static
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
-// Configure multer for file upload
+
+// CORS middleware helper function
+const allowCors = (fn) => async (req, res) => {
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,PATCH,DELETE,POST,PUT");
+  res.setHeader("Access-Control-Allow-Headers", "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version");
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
+  return await fn(req, res);
+};
+
+// Initialize next-connect handler
+const handler = nextConnect();
 const upload = multer({ dest: '/tmp' });
 
 // Initialize CORS middleware
 const corsMiddleware = cors({
-  origin: '*',
-  methods: ['POST', 'OPTIONS'], 
-  allowedHeaders: ['Content-Type', 'Authorization'], 
-  credentials: true,
+  // Configure CORS options as needed
+  origin: '*', // Allow all origins, you can restrict this in production
+  methods: ['POST', 'OPTIONS'], // Allow POST and OPTIONS methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // You can add any headers that you want to support
+  credentials: true, // This allows cookies to be sent with the request, if needed
 });
 
-
-const handler = nextConnect();
 
 handler.use(corsMiddleware);
+
 // Handle OPTIONS method for preflight requests
-handler.options('*', (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  // Send response
-  res.status(200).end();
-});
-// Ensure that POST method is handled
-handler.post((req, res, next) => {
-  next();
-});
+// Apply CORS middleware to the handler
+handler.use(allowCors);
 
 handler.use(upload.single('video'));
 
@@ -80,4 +83,4 @@ export const config = {
   },
 };
 
-export default handler;
+export default allowCors(handler);
