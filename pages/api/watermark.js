@@ -1,6 +1,7 @@
 import nextConnect from 'next-connect';
 import multer from 'multer';
 import fs from 'fs';
+import cors from 'cors';
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegStatic from 'ffmpeg-static';
@@ -11,7 +12,16 @@ ffmpeg.setFfmpegPath(ffmpegStatic);
 // Configure multer for file upload
 const upload = multer({ dest: '/tmp' });
 
+// Initialize CORS middleware
+const corsMiddleware = cors({
+  origin: '*',
+  methods: ['POST'], 
+});
+
+
 const handler = nextConnect();
+
+handler.use(corsMiddleware);
 
 handler.use(upload.single('video'));
 
